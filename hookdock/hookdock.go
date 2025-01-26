@@ -2,23 +2,27 @@ package hookdock
 
 import (
 	"fmt"
-	"io"
 	"net/http"
+
+	"github.com/deexithparand/hookdock/getr"
+	"github.com/deexithparand/hookdock/postr"
 )
 
 type CustomHandler struct{}
 
 func (c *CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("request method : ", r.Method)
-	// fmt.Fprintf(w, "Hello, World!\n")
 
-	var writer io.Writer = w
-	n, err := writer.Write([]byte("HELLO WORLD!"))
-	if err != nil {
-		panic(err)
+	// single route - not required to handle routes
+
+	switch r.Method {
+	case "GET":
+		getr.GetRequestRootURL(w, r)
+	case "POST":
+		postr.PostRequestRootURL(w, r)
+	default:
+		fmt.Println("other than GET  & POST")
 	}
-
-	fmt.Printf("Number of bytes sent in response %d\n", n)
 }
 
 func StartServer() error {
@@ -32,6 +36,7 @@ func StartServer() error {
 		Handler: custom_handler,
 	}
 
+	fmt.Println("Server started and running ....")
 	err := http.ListenAndServe(server.Addr, server.Handler)
 	if err != nil {
 		return err
